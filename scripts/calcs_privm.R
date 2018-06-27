@@ -1,10 +1,45 @@
 library('tidyverse')
+source(file='scripts/basic financial.r')
 
 
 # This file executes things originally produced in privmcalcs-Feb2018.R
 
+# Functions beginning with "get_" grab and manipulate data
+# Functions beginning with "mix_" combine data sources
+# Functions beginning with "populate_" finalize data prep for table insertion
 
-all_cashflow_irr = function(){
+get_fundinfo_data = function(){
+  df = read_csv('data/fundinfo.csv')
+  return(df)
+}
+
+
+get_valdate = function(){
+  #This is a dangerous way to get date
+  fundinfo = get_fundinfo_data()
+  valdate = as.Date(fundinfo$CSDate, format='%m/%d/%Y')[1] 
+  return(valdate)
+}
+
+
+get_unfunded_date = function(){
+  #This is a dangerous way to get date
+  fundinfo = get_fundinfo_data()
+  unfunded.date = as.Date(fundinfo$Unfunded.Date, format='%m/%d/%Y')[1] 
+  return(unfunded.date)
+}
+
+
+get_category_data = function(){
+  df = read_csv('data/Category.csv')
+  return(df)
+}
+
+
+get_all_cash_flow_irr = function(){
+  
+  ## Replaces x.all up to line 58
+  
   x.all=read_csv(file='data/AllCashFlowIRR.csv')
   Bolt = read_csv(file='data/BoltOnCFStockSales.csv')
   CCash = read_csv(file='data/PI Transactions.csv')
@@ -26,15 +61,18 @@ all_cashflow_irr = function(){
   
   df = df_x.all %>%
     bind_rows(Bolt, df_CCash) %>%
+    mutate(Date = gsub("-","/",as.character(Date))) %>%
     mutate(Date = as.Date(Date, format='%m/%d/%Y'))
+  
   return(df)
 }
 
 
-all_navs = function(){
-  # Function replaces: reviewhv.csv
+get_all_historical_mv = function(){
+  # Creates hv from line to line 60
   perf = read_csv(file = 'data/Valuation Performance.csv')
   hv = read_csv(file='data/AllHistoricalMV.csv')
+  valdate = get_valdate()
   
   # Wrangle Data - convert to proper form
   df_perf = perf %>%
@@ -42,12 +80,7 @@ all_navs = function(){
     rename(ShortName = `Client Grouping 1`,
            Amount = `Market Value`) %>%
     mutate(Type = "V",
-           Date = as.Date(cut(Sys.Date(), "quarter")) - 1)
-  ### This is where the "quarter" date is made up from manual data update
-  ### This replaces bringing in fundinfo.csv and retrieving a manually updated number
-  # as.Date(zoo::as.yearqtr(Sys.Date()) + 1/4) = beginning of quarter
-  # as.Date(zoo::as.yearqtr(Sys.Date()) + 1/4, frac = 1) = end of quarter
-  # as.Date(as.character(zoo::as.yearqtr(Sys.Date()) - 1/4, frac = 1), format = "%Y Q") = end of quarter ??
+           Date = valdate)
   
   df_hv = hv %>%
     mutate(Date = as.Date(Date, format = '%m/%d/%Y'))
@@ -58,6 +91,70 @@ all_navs = function(){
 }
 
 
+mix_cash_flow_irr_to_fund_info = function(){
+  # Continues x.all up to line 86
+  cf_irr = get_all_cash_flow_irr()
+  fundinfo = get_fundinfo_data()
+  
+  df = cf_irr %>%
+    left_join(fundinfo, by = c("ShortName" = "Short")) %>%
+    select(Date, ShortName, Type, Amount,
+           catshort, Vintage, Portfolio, Legacy, Stype, Sector) %>%
+    rename(cats = catshort, vints = Vintage)
+  return(df)
+}
+
+
+populate_cash_flows_data = function(){
+  df = mix_cash_flow_irr_to_fund_info()
+  df = df %>%
+    filter(Type == 'C') %>%
+    select(-Type)
+  return(df)
+}
+
+
+populate_values_data = function(){
+  df = mix_cash_flow_irr_to_fund_info()
+  df = df %>%
+    filter(Type == 'V') %>%
+    select(-Type)
+  return(df)
+}
+
+
+mix_all_historical_mv_to_fund_info = function(){
+  # Creates hv to line 82
+  hv = get_all_historical_mv()
+  fundinfo = get_fundinfo_data()
+  
+  df = hv %>%
+    left_join(fundinfo, by = c("ShortName" = "Short")) %>%
+    select(ShortName, Date, Amount, Type,
+           catshort, Vintage, Portfolio, Legacy, Stype, Sector) %>%
+    rename(cats = catshort, vints = Vintage)
+  return(df)
+}
+
+
+
+
+## Equivalents ##
+valdate = get_valdate()
+cats = as.data.frame(get_category_data())
+x.all = as.data.frame(mix_cash_flow_irr_to_fund_info())
+fundinfo = as.data.frame(get_fundinfo_data())
+x = as.data.frame(populate_cash_flows_data())
+x.v = as.data.frame(populate_values_data())
+hv = as.data.frame(mix_all_historical_mv_to_fund_info())
+## Now you can start at line 90
+## This works up until the end!!
+
+
+
+
+
+
 combine_navs_irr = function(){
   x.all = all_cashflow_irr()
   hv = all_navs()
@@ -65,35 +162,32 @@ combine_navs_irr = function(){
   return(df)
 }
 
-#a = x.all %>% left_join(fundinfo, by = c('ShortName'='Short'))
-#b = hv %>% left_join(fundinfo, by = c('ShortName' = 'Short'))
 
-#106 - 
-#join fundinfo and cats, some random fiddling done to make it fit
 
-#124 - 154
-#join x and f.c.name, join x.v, join hv (where x.v is subset of x.all)
 
-# 156 - 
-# join x and cats
 
-fundinfo = read_csv('data/fundinfo.csv')
-cats = read_csv('data/Category.csv')
 
-irr_navs = combine_navs_irr()
-a = irr_navs %>%
-  filter(Type == 'C')
-b = fundinfo %>%
-  left_join(cats, by='catshort')
-c = a %>%
-  left_join(b, by=c('ShortName' = 'Short'))
+
+
+
+
+
 #
 
 
 
-tfundvals = read_csv('data/tfundvals.csv')
-p2pirrs = read_csv('data/p2pirrs.csv') #seems created not raw data
-portmat = read_csv('data/portmat.csv') #seems created not raw data
+
+
+
+
+
+
+
+
+
+
+
+
 
 all_benchmarks = function(){
   spy = read_csv('data/spx index.csv')
@@ -105,45 +199,21 @@ all_benchmarks = function(){
   r2ksec = read_csv('data/r2k sector indices.csv')
   
   df_benchmarks = bind_rows(spy %>% mutate(symbol = 'SPY'),
-                       rty %>% mutate(symbol = 'RTY'),
-                       vmfx %>% mutate(symbol = 'VMFX'),
-                       lli %>% mutate(symbol = 'LLI'),
-                       cpi %>% mutate(symbol = 'CPI') %>% rename(PX_LAST = CPIxFE, date = Date),
-                       odce %>% mutate(symbol = 'ODCE') %>% rename(date = X1, PX_LAST = x),
-                       r2ksec %>% select(-X1) %>% rename(date = Date) %>% gather(symbol, PX_LAST, -date)) %>%
+                            rty %>% mutate(symbol = 'RTY'),
+                            vmfx %>% mutate(symbol = 'VMFX'),
+                            lli %>% mutate(symbol = 'LLI'),
+                            cpi %>% mutate(symbol = 'CPI') %>% rename(PX_LAST = CPIxFE, date = Date),
+                            odce %>% mutate(symbol = 'ODCE') %>% rename(date = X1, PX_LAST = x),
+                            r2ksec %>% select(-X1) %>% rename(date = Date) %>% gather(symbol, PX_LAST, -date)) %>%
     select(date, PX_LAST, symbol)
   return(df_benchmarks)
 }
 
-irr_navs = combine_navs_irr()
-irr_navs = irr_navs %>%
-  rename(shortname = ShortName,
-         date = Date,
-         transaction_type = Type,
-         amount = Amount) %>%
-  mutate(date = as.character(date)) %>%
-  unique() %>%
-  na.omit()
-benchmarks = all_benchmarks()
-benchmarks = benchmarks %>% rename(px_last = PX_LAST) %>%
-  mutate(date = as.character(date)) %>%
-  unique() %>%
-  na.omit()
 
 
-irr_navs = combine_navs_irr() %>% 
-  mutate(Date = as.character(Date)) %>%
-  rename(date = Date, shortname = ShortName, transaction_type = Type, amount = Amount) %>%
-  group_by(date,shortname,transaction_type) %>%
-  summarise(amount = max(amount)) %>%
-  unique() %>%
-  na.omit()
+#library('DBI')
+#library('RSQLite')
+#con <- dbConnect(RSQLite::SQLite(), "../DB_Application/temporary4.db")
+#dbWriteTable(con, name='irr', value = irr_navs %>% unique(), row.names=FALSE, append=TRUE)
+#dbWriteTable(con, name='benchmarks', value = benchmarks %>% unique(), row.names=FALSE, append=TRUE)
 
-
-
-
-library('DBI')
-library('RSQLite')
-con <- dbConnect(RSQLite::SQLite(), "../DB_Application/temporary4.db")
-dbWriteTable(con, name='irr', value = irr_navs %>% unique(), row.names=FALSE, append=TRUE)
-dbWriteTable(con, name='benchmarks', value = benchmarks %>% unique(), row.names=FALSE, append=TRUE)
