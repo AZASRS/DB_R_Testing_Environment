@@ -1,0 +1,1441 @@
+#LyX 2.1 created this file. For more info see http://www.lyx.org/
+\lyxformat 474
+\begin_document
+\begin_header
+\textclass article
+\use_default_options true
+\begin_modules
+knitr
+\end_modules
+\maintain_unincluded_children false
+\language english
+\language_package default
+\inputencoding auto
+\fontencoding global
+\font_roman default
+\font_sans default
+\font_typewriter default
+\font_math auto
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100
+\font_tt_scale 100
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\paperfontsize default
+\spacing single
+\use_hyperref false
+\papersize default
+\use_geometry false
+\use_package amsmath 1
+\use_package amssymb 1
+\use_package cancel 0
+\use_package esint 1
+\use_package mathdots 1
+\use_package mathtools 0
+\use_package mhchem 1
+\use_package stackrel 0
+\use_package stmaryrd 0
+\use_package undertilde 0
+\cite_engine basic
+\cite_engine_type default
+\biblio_style plain
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\justification true
+\use_refstyle 1
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\quotes_language english
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Title
+Private Equity Pacing Model
+\end_layout
+
+\begin_layout Author
+Eric Glass
+\end_layout
+
+\begin_layout Date
+October 24, 2016
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+<<echo=FALSE, warning=FALSE, message=FALSE,restults='asis'>>=
+\end_layout
+
+\begin_layout Plain Layout
+
+load("../private investment performance/pmedata.rdata")
+\end_layout
+
+\begin_layout Plain Layout
+
+@
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Introduction and Background
+\end_layout
+
+\begin_layout Standard
+Each year we prepare a pacing model to assess and plan the level of commitments
+ to private equity.
+ This report provides the pacing plan for calendar year 2016.
+\end_layout
+
+\begin_layout Standard
+Prior commitments to private equity partnerships are summarized in the following
+ table.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset VSpace bigskip
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="12" columns="2">
+<features rotate="0" tabularvalignment="middle">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Calendar Year
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+by Vintage
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+2006
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+50
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+2007
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+478
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+2008
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+687
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+2009
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+386
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+2010
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+370
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+2011
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+656
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+2012
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+325
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+2013
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+550
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+2014
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+620
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+2015
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+700
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+2016
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+700
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The pacing study from the fourth quarter of 2015 concluded that for the
+ calendar year 2016 ASRS should commit $700 million to new private equity
+ partnerships in order to achieve and maintain the then target amount of
+ 8% of total fund.
+ An interim update to the pacing plan in June 2016 confirmed the 2016 pacing
+ of $700 million.
+ This updated study recommends $725 million as the target for new private
+ equity partnership commitments during 2017.
+\end_layout
+
+\begin_layout Standard
+\begin_inset VSpace bigskip
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Model Structure
+\end_layout
+
+\begin_layout Standard
+The pacing model is fully integrated with the private markets database by
+ utilizing the R platform.
+ It reads from that database to determine commitment amounts, unfunded amounts,
+ cash flows, and contractual terms as to end of investment period and end
+ of fund dates.
+ This information is then used to calculate for existing investments projections
+ of capital calls, distributions, investment earnings and NAVs.
+ Once this has been calculated for existing investments, the model then
+ calculates the same information for hypothetical future investments for
+ sensitivity analysis on pacing assumptions.
+\end_layout
+
+\begin_layout Standard
+In conducting a pacing analysis, there are three major assumptions that
+ drive the model conclusion.
+ First is the return assumption.
+ Prior to liquidation, the model is premised on an assumption that assets
+ will grow at a certain rate.
+ In the case of private equity, there is usually no income dividend yield,
+ just distributions from capital events of company sales or refinancing.
+ So, all the presumed return is reflected in growth of net asset value.
+ The second major assumption is concerning the timing and rate at which
+ capital is called in to the partnership.
+ The final assumption concerns the timing and rate at which capital is returned
+ from the partnership.
+ Historic data on the ASRS private equity portfolio is presented in Figure
+ 1.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+ASRS Private Equity Portfolio
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename P:/IMD/Karl/R projects/private investment performance/pegraphs.pdf
+	width 6in
+	height 8.5in
+	rotateAngle 90
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+In doing this work, we previously researched literature that discusses this
+ type of modeling.
+ We settled on a method published in 2002 by Dean Takahashi and Seth Alexander.
+ 
+\end_layout
+
+\begin_layout Section
+How did the 2015 version of this model perform?
+\end_layout
+
+\begin_layout Standard
+The following table summarizes the output of the model and compares it to
+ actual results.
+\end_layout
+
+\begin_layout Standard
+\begin_inset VSpace bigskip
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="4" columns="4">
+<features rotate="0" tabularvalignment="middle">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+2015 Model Forecast
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+2016 Interim Update Forecast
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Actual
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Net Capital Calls
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+177
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+107
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+117
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+NAV
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+2,562
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+2623
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+2,736
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Return
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+13%
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+13%
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+8.1%
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset VSpace bigskip
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The model performed reasonably well.
+ The net capital calls were lower than the 2015 forecast but very close
+ to the interim update.
+ The returns were lower than forecast.
+ The 2015 forecast NAV was within 7% of the actual amount achieved and the
+ 2016 interim update forecast NAV was within 4% of the actual amount achieved.
+\end_layout
+
+\begin_layout Section
+Return Assumptions
+\end_layout
+
+\begin_layout Standard
+We have changed the assumed net of fee returns from 13% to 11% that private
+ equity will earn in light of moderately tempered prospective equity return
+ expectations.
+ This is generally in-line with the historic performance of private equity
+ and consistent with the historic performance of the ASRS portfolio.
+ The ASRS portfolio has earned an inception to date IRR of 
+\begin_inset Flex S/R expression
+status collapsed
+
+\begin_layout Plain Layout
+
+round(pme.df["Total PE","Fund.IRR"],2)
+\end_layout
+
+\end_inset
+
+ % as of 
+\begin_inset Flex S/R expression
+status collapsed
+
+\begin_layout Plain Layout
+
+valdate
+\end_layout
+
+\end_inset
+
+.
+ NEPC, the ASRS general investment consultant, estimates long run returns
+ for private equity to be 9.75%.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Preqin Private Equity Buyout Benchmark
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+<<echo=FALSE, out.width="5in", out.height="7in", warning=FALSE, message=FALSE>>=
+\end_layout
+
+\begin_layout Plain Layout
+
+load('../return profile/pe profile.rdata')
+\end_layout
+
+\begin_layout Plain Layout
+
+require(zoo,quietly=TRUE)
+\end_layout
+
+\begin_layout Plain Layout
+
+par(mfrow=c(2,1))
+\end_layout
+
+\begin_layout Plain Layout
+
+ylim=range(c(as.numeric(r2kindex),as.numeric(Buyout.z))) 
+\end_layout
+
+\begin_layout Plain Layout
+
+plot(Buyout.z,main='Preqin Buyout Index',ylab='Growth of a $',type='l',col='red',
+lwd=2,ylim=ylim) 
+\end_layout
+
+\begin_layout Plain Layout
+
+lines(r2kindex,col='blue',lwd=2) 
+\end_layout
+
+\begin_layout Plain Layout
+
+legend('topleft',fill=c('red','blue'),legend=c('Preqin Buyout','R2K')) 
+\end_layout
+
+\begin_layout Plain Layout
+
+abline(h=100,lty='dotted') 
+\end_layout
+
+\begin_layout Plain Layout
+
+plot(100*mu.b.4q.z,main='Preqin Buyout Index',ylab='Rolling 4 Quarter Returns',type
+='l',col='red',lwd=2) 
+\end_layout
+
+\begin_layout Plain Layout
+
+abline(h=c(-.2,-.1,.1,.2,.3),lty='dotted') 
+\end_layout
+
+\begin_layout Plain Layout
+
+abline(h=0)
+\end_layout
+
+\begin_layout Plain Layout
+
+abline(h=mean(100*mu.b.4q.z),lwd=2,col="blue")
+\end_layout
+
+\begin_layout Plain Layout
+
+#hist(100*mu.b.4q,main='Preqin rolling 4 quarter returns',xlab='Return') 
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+@
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+In figure 2, I show historic returns of private equity as reflected in the
+ Preqin buyout index.
+ The blue line in the lower chart is the mean of the rolling four quarter
+ returns which equals 
+\begin_inset Flex S/R expression
+status collapsed
+
+\begin_layout Plain Layout
+
+round(100*mean(mu.b.4q.z),2)
+\end_layout
+
+\end_inset
+
+%.
+\end_layout
+
+\begin_layout Standard
+The model assumption is for a return that is higher than the NEPC forecast
+ and higher than historic returns of the Preqin Index.
+ Additionally the model assumes a constant constant expected return with
+ no 
+\begin_inset Quotes eld
+\end_inset
+
+J curve
+\begin_inset Quotes erd
+\end_inset
+
+ in early years.
+ Presuming our preference would be to be under rather than over committed,
+ the model is therefore conservative in these assumptions which cause forecast
+ NAV to be higher than might otherwise be the case.
+ 
+\end_layout
+
+\begin_layout Section
+Capital Call Modeling
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+<<echo=FALSE, warning=FALSE, message=FALSE,results='asis',fig.height=4,fig.width=7
+>>=
+\end_layout
+
+\begin_layout Plain Layout
+
+#portfolio="PE"
+\end_layout
+
+\begin_layout Plain Layout
+
+#source(file="pacing report.R")
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+@
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Let's move on to a consideration of the timing and amount of capital calls.
+ In modeling capital calls, we look primarily to our experience.
+ We began investing in private equity in 2007 and have now invested 110
+ in private equity partnerships.
+ We look at these funds by their vintage year to see the pattern of capital
+ calls.
+ Figure 3 shows a graph of this pattern together with our pacing model assumptio
+n for capital calls.
+ In this chart, an open black circle represents the percent of capital committed
+ that has been called by the age of the fund (using a mid year convention).
+ The green dot is the mean percentage of capital called for a particular
+ vintage and dotted blue line is the regression line of the observations.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Model Calls Compared to ASRS History
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+<<echo=FALSE, warning=FALSE, message=FALSE, results='asis', fig.height=4,
+ fig.width=7>>=
+\end_layout
+
+\begin_layout Plain Layout
+
+require(zoo)
+\end_layout
+
+\begin_layout Plain Layout
+
+portfolio="PE"
+\end_layout
+
+\begin_layout Plain Layout
+
+source(file='pacing report.R')
+\end_layout
+
+\begin_layout Plain Layout
+
+mcall=as.numeric(call.df[,"*Future*1"])
+\end_layout
+
+\begin_layout Plain Layout
+
+mcall.pct=100*(-cumsum(mcall))/(fi.re[fi.re$Short=="*Future*1","Commit"]*1000000)
+\end_layout
+
+\begin_layout Plain Layout
+
+mcall.pct=mcall.pct[mcall.pct>0]
+\end_layout
+
+\begin_layout Plain Layout
+
+mcall.pct=mcall.pct[1:32] 
+\end_layout
+
+\begin_layout Plain Layout
+
+mcall.age=.25*(1:32) 
+\end_layout
+
+\begin_layout Plain Layout
+
+fi.re.old=subset(fi.re,fi.re$Vintage<2016)
+\end_layout
+
+\begin_layout Plain Layout
+
+fi.age=2016-fi.re.old$Vintage
+\end_layout
+
+\begin_layout Plain Layout
+
+fi.call.pct=100*(1-(fi.re.old$Unfunded/fi.re.old$Commit))
+\end_layout
+
+\begin_layout Plain Layout
+
+mean.pct=aggregate(fi.call.pct,by=list(fi.age),mean)
+\end_layout
+
+\begin_layout Plain Layout
+
+plot(.5+fi.age,fi.call.pct,xlab="Fund Age",ylab="% of commitment funded",xlim=c(0,8)
+)
+\end_layout
+
+\begin_layout Plain Layout
+
+abline(lm(fi.call.pct~fi.age),col='blue',lty="dotted")
+\end_layout
+
+\begin_layout Plain Layout
+
+lines(mcall.age,mcall.pct,col='red',lwd=2)
+\end_layout
+
+\begin_layout Plain Layout
+
+points(.5+mean.pct$Group.1,mean.pct$x,pch=1,col='green3')
+\end_layout
+
+\begin_layout Plain Layout
+
+points(.5+mean.pct$Group.1,mean.pct$x,pch=20,col='green3')
+\end_layout
+
+\begin_layout Plain Layout
+
+legend("topleft",legend=c("ASRS Pacing Model","Existing Investments", 
+\end_layout
+
+\begin_layout Plain Layout
+
+	"Mean of Existing","Regression Line"), 
+\end_layout
+
+\begin_layout Plain Layout
+
+	cex=.7,text.col=c("red","black","green3","blue"))
+\end_layout
+
+\begin_layout Plain Layout
+
+@
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+As you can see the capital calls tend to be higher during the first few
+ years then taper off a bit after that.
+ The red line on this chart shows the model we have chosen for pacing calculatio
+ns.
+ 
+\end_layout
+
+\begin_layout Section
+Distribution Modeling
+\end_layout
+
+\begin_layout Standard
+Distribution modeling is approached using the Takahashi model referenced
+ above.
+ This model presumes an exponential relationship between elapsed time and
+ distributions.
+ Their research found a reasonably good fit to historic data using this
+ approach.
+ The calculation required is simple -- you just calculate where you are
+ in the life of a fund as a fraction, the numerator of which is the current
+ year and the denominator is the number of years in the fund.
+ You then take that fraction to the power of a factor (which Takahashi calls
+ the 
+\begin_inset Quotes eld
+\end_inset
+
+bow
+\begin_inset Quotes erd
+\end_inset
+
+) to determine the amount of the current NAV estimated to be distributed
+ during that year of the fund.
+ For example, if you are in the 5th year of a 10 year fund and you have
+ selected 2 as the bow for your model, the amount of the distribution would
+ be
+\begin_inset Formula $\:\frac{5}{10}^{2}\:$
+\end_inset
+
+, or 25%.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Model Distribution % Compared to History
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+<<echo=FALSE, warning=FALSE, message=FALSE, results='asis', fig.height=4,
+ fig.width=7>>=
+\end_layout
+
+\begin_layout Plain Layout
+
+source("pedpigraph.r")
+\end_layout
+
+\begin_layout Plain Layout
+
+@
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+In doing this work, we focused on funds in the ASRS underwriting database
+ because the young age of the ASRS portfolio does not provide insight to
+ cash flow patterns in the later years of fund life.
+ ASRS has accumulated cash flow information on several hundred funds with
+ over one hundred managers.
+ To conduct this analysis, we limited the data set to historic funds with
+ at least 90% of value distributed.
+ This resulted in a data set with 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+Sexpr{fundcount}
+\end_layout
+
+\end_inset
+
+ funds and over 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+Sexpr{floor(length(agevec)/1000)}
+\end_layout
+
+\end_inset
+
+ thousand cash flow observations.
+ Figure 4 shows the results of the pacing model compared to cash flow patterns
+ in these historical funds.
+ The light blue dots reflect individual observations and the dark blue line
+ is a localized regression of the observations.
+ The red line is the ASRS pacing model which is the Takahashi formula with
+ a bow of 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+Sexpr{bow}
+\end_layout
+
+\end_inset
+
+ the outcome of which is then expressed as a percent of value distributed.
+ We have selected a model which generally delays distributions compared
+ to the historic pattern.
+\end_layout
+
+\begin_layout Section
+Model Conclusion
+\end_layout
+
+\begin_layout Standard
+We now show the results of the calculations using these assumptions and
+ assuming commitments at $725 million in calendar 2017, growing at 5% per
+ year thereafter.
+ The resulting annual commitments are shown in Figure 5.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Annual Commitments
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+<<echo=FALSE, warning=FALSE, message=FALSE,results='asis',fig.height=4,fig.width=7
+>>=
+\end_layout
+
+\begin_layout Plain Layout
+
+futurefunds=fi.re[grep("Future",fi.re$Short),] 
+\end_layout
+
+\begin_layout Plain Layout
+
+commitment.table=round(aggregate(futurefunds$Commit,by=list(futurefunds$Vintage),
+sum))
+\end_layout
+
+\begin_layout Plain Layout
+
+commitment.table=commitment.table[1:10,]
+\end_layout
+
+\begin_layout Plain Layout
+
+colnames(commitment.table)=c("Calendar Year","Commitments ($millions)") 
+\end_layout
+
+\begin_layout Plain Layout
+
+ct.x=xtable(commitment.table,digits=c(0,0,0)) 
+\end_layout
+
+\begin_layout Plain Layout
+
+print(ct.x,floating=FALSE, scalebox=1.1) 
+\end_layout
+
+\begin_layout Plain Layout
+
+@
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+In order to compare the projected net asset values (
+\begin_inset Quotes eld
+\end_inset
+
+NAVs
+\begin_inset Quotes erd
+\end_inset
+
+) to target asset allocation, we have assumed that the total fund assets
+ grow from June 30, 2016 levels at 5% per year.
+ This is the 8% actuarial return assumption minus the 3% for net benefit
+ payments.
+\end_layout
+
+\begin_layout Standard
+Figure 6 shows the resulting cash flows and NAVs compared to the target
+ fund, the projected NAVs as a % of total fund assets and a table of projected
+ capital calls and distributions.
+ In this chart, solid red dots reflect historic NAVs while hollow red dots
+ are projected NAVs.
+ Similarly, the solid blue line is historic net cumulative cash flow, while
+ the dotted blue line is the projection.
+ The green line is the target funding.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Total Private Equity Portfolio Model Output
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+<<echo=FALSE, warning=FALSE, message=FALSE, results='asis', fig.height=4,
+ fig.width=7>>=
+\end_layout
+
+\begin_layout Plain Layout
+
+#cat('
+\backslash
+
+\backslash
+newpage')
+\end_layout
+
+\begin_layout Plain Layout
+
+pacingreport("PE", "Total")
+\end_layout
+
+\begin_layout Plain Layout
+
+@
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+As you can see, based on commitment levels of $725 million in 2017 growing
+ at 5% after that, the model shows current funding very close to the target
+ level of funding of 8% of total fund assets.
+ It then drifts below the target before eventually catching up and going
+ above the target in 2024.
+ Therefore, we recommend commitments of $725 million in 2017.
+ 
+\end_layout
+
+\begin_layout Section
+Appendix
+\end_layout
+
+\begin_layout Standard
+The remainder of the report is the detail model output of every existing
+ and future projected fund.
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+<<echo=FALSE, warning=FALSE, message=FALSE, results='asis', fig.height=4,
+ fig.width=7>>=
+\end_layout
+
+\begin_layout Plain Layout
+
+cat('
+\backslash
+
+\backslash
+newpage')
+\end_layout
+
+\begin_layout Plain Layout
+
+pacingreport("PE", "all")
+\end_layout
+
+\begin_layout Plain Layout
+
+@
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_body
+\end_document
