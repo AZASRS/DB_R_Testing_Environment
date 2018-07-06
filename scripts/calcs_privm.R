@@ -1,12 +1,13 @@
 library('tidyverse')
 source(file='scripts/basic financial.r')
 
-
 # This file executes things originally produced in privmcalcs-Feb2018.R
 
 # Functions beginning with "get_" grab and manipulate data
 # Functions beginning with "mix_" combine data sources
 # Functions beginning with "populate_" finalize data prep for table insertion
+# Functions beginning with "utility_" are used for DRY purposes in other functions
+
 
 get_fundinfo_data = function(){
   df = read_csv('data/fundinfo.csv')
@@ -31,7 +32,8 @@ get_unfunded_date = function(){
 
 
 get_category_data = function(){
-  df = read_csv('data/Category.csv')
+  dat = read_csv('data/Category.csv')
+  df = dat
   return(df)
 }
 
@@ -85,7 +87,7 @@ get_all_historical_mv = function(){
   df_hv = hv %>%
     mutate(Date = as.Date(Date, format = '%m/%d/%Y'))
   
-  ### check required for NA values
+  ###TODO: check required for NA values
   df = bind_rows(df_hv, df_perf)
   return(df)
 }
@@ -137,83 +139,143 @@ mix_all_historical_mv_to_fund_info = function(){
 }
 
 
-
+############################################
+### Clean up so that data does not need to be looped through
 
 ## Equivalents ##
 valdate = get_valdate()
-cats = as.data.frame(get_category_data())
+cats = get_category_data()
 x.all = as.data.frame(mix_cash_flow_irr_to_fund_info())
-fundinfo = as.data.frame(get_fundinfo_data())
-x = as.data.frame(populate_cash_flows_data())
-x.v = as.data.frame(populate_values_data())
-hv = as.data.frame(mix_all_historical_mv_to_fund_info())
+fundinfo = as.data.frame(get_fundinfo_data()) 
+x = as.data.frame(populate_cash_flows_data()) 
+x.v = as.data.frame(populate_values_data()) 
+pre_hv = as.data.frame(get_all_historical_mv())
+hv = as.data.frame(mix_all_historical_mv_to_fund_info()) ### hv was recreated in NEW-privmcalcs as a combo of pre_hv and fundinfo to avoid duplicating data in db
 ## Now you can start at line 90
 ## This works up until the end!!
 
+###############################################
 
+#### This section maybe shows that x, x.v, hv = get_all_historical_mv(), fundinfo, cats could be all we need in database
+### TODO: should I group by fundinfo$Short and sum() ?? need all grouping variables and values to sum
+a = cats %>%
+  left_join(fundinfo, by = 'catshort')
 
+b = a %>%
+  left_join(x, by = c("Short" = "ShortName"))
+b %>% group_by(Short) %>% summarize(n = n()) %>% arrange(desc(n)) ### shows duplication problem
 
+c = a %>%
+  left_join(x.v, by = c("Short" = "ShortName"))
+c %>% group_by(Short) %>% summarize(n = n()) %>% arrange(desc(n)) ### shows duplication problem
 
+d = bind_rows(b,c) ### may not be necessary because tables will be different
 
-combine_navs_irr = function(){
-  x.all = all_cashflow_irr()
-  hv = all_navs()
-  df = bind_rows(x.all,hv)
+e = d %>%
+  left_join(hv, by = c("Short" = "ShortName"))
+##############################
+
+utility_cf_and_value_data_function = function(y){
+  df = tibble(Date=character(),Amount=integer(),ShortName=character())
+  for(i in names(y)){
+    a = y[i][[1]]
+    if(length(a > 0)){
+      b = fortify.zoo(a)
+      b$Date = as.character(b$Index)
+      b$Amount = b$a
+      b$ShortName = i
+      b$Index = NULL
+      b$a = NULL
+      df = bind_rows(df,b)
+    }
+  }
   return(df)
 }
 
 
-
-
-
-
-
-
-
-
-
-#
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-all_benchmarks = function(){
-  spy = read_csv('data/spx index.csv')
-  rty = read_csv('data/rty index.csv')
-  vmfx = read_csv('data/vbmfx equity.csv')
-  odce = read_csv('data/odce daily index.csv')
-  lli = read_csv('data/spbdal index.csv')
-  cpi = read_csv('data/CPI X Food Energy.csv')
-  r2ksec = read_csv('data/r2k sector indices.csv')
-  
-  df_benchmarks = bind_rows(spy %>% mutate(symbol = 'SPY'),
-                            rty %>% mutate(symbol = 'RTY'),
-                            vmfx %>% mutate(symbol = 'VMFX'),
-                            lli %>% mutate(symbol = 'LLI'),
-                            cpi %>% mutate(symbol = 'CPI') %>% rename(PX_LAST = CPIxFE, date = Date),
-                            odce %>% mutate(symbol = 'ODCE') %>% rename(date = X1, PX_LAST = x),
-                            r2ksec %>% select(-X1) %>% rename(date = Date) %>% gather(symbol, PX_LAST, -date)) %>%
-    select(date, PX_LAST, symbol)
-  return(df_benchmarks)
+populate_fund_value_data = function(){
+  ## This covers through line, searhc for names(y.hv)=namevec
+  y_hv = utility_cf_and_value_data_function(y.hv)
+  y_v = utility_cf_and_value_data_function(y.v)
+  df = bind_rows(y_hv,y_v)
+  df = df %>%
+    group_by(Date, ShortName) %>%
+    summarize(Amount = sum(Amount)) %>%
+    tidyr::drop_na()
+  return(df)
 }
 
 
+populate_fund_cash_flows_data = function(){
+  ## This covers through line, searhc for names(y.hv)=namevec
+  df = utility_cf_and_value_data_function(y.cf)
+  df = df %>%
+    group_by(Date, ShortName) %>%
+    summarize(Amount = sum(Amount)) %>%
+    tidyr::drop_na()
+  return(df)
+}
 
-#library('DBI')
-#library('RSQLite')
-#con <- dbConnect(RSQLite::SQLite(), "../DB_Application/temporary4.db")
-#dbWriteTable(con, name='irr', value = irr_navs %>% unique(), row.names=FALSE, append=TRUE)
-#dbWriteTable(con, name='benchmarks', value = benchmarks %>% unique(), row.names=FALSE, append=TRUE)
 
+y.v.table = populate_fund_value_data()
+y.cf.table = populate_fund_cash_flows_data()
+
+
+
+
+
+
+
+
+
+
+
+##################################
+## cleaning for insert to database
+##################################
+
+df_fundinfo = fundinfo
+names(df_fundinfo) = tolower(names(df_fundinfo))
+df_fundinfo = df_fundinfo %>%
+  rename(unfunded_date = unfunded.date,
+         yield_amt = yield,
+         class_type = class)
+
+df_x.v = x.v
+names(df_x.v) = tolower(names(df_x.v))
+df_x.v = df_x.v %>%
+  select(date, shortname, amount) %>%
+  mutate(date = as.character(date)) %>%
+  group_by(date,shortname) %>%
+  summarize(amount = max(amount))
+
+df_x = x
+names(df_x) = tolower(names(df_x))
+df_x = df_x %>%
+  select(date, shortname, amount) %>%
+  mutate(date = as.character(date)) %>%
+  group_by(date,shortname) %>%
+  summarize(amount = max(amount))
+
+df_cats = cats
+names(df_cats) = tolower(names(df_cats))
+df_cats = df_cats %>% 
+  rename(growth_d = growth.d,
+         yield_d = yield.d,
+         method_d = method.d)
+
+df_pre_hv = pre_hv
+names(df_pre_hv) = tolower(names(df_pre_hv))
+df_pre_hv = df_pre_hv %>% 
+  select(-type) %>%
+  filter(is.na(shortname) == FALSE)
+
+
+library('DBI')
+library('RSQLite')
+con <- dbConnect(RSQLite::SQLite(), "../DB_Application/asrs_temporary.db")
+dbWriteTable(con, name = 'fundinfo', value = df_fundinfo, row.names = FALSE, append = TRUE)
+dbWriteTable(con, name = 'cashflow', value = df_x.v, row.names = FALSE, append = TRUE)
+dbWriteTable(con, name = 'nav', value = df_x, row.names = FALSE, append = TRUE)
+dbWriteTable(con, name = 'category', value = df_cats, row.names = FALSE, append = TRUE)
+dbWriteTable(con, name = 'historical_mv', value = df_pre_hv, row.names = FALSE, append = TRUE)
