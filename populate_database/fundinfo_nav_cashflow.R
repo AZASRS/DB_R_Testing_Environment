@@ -19,6 +19,8 @@ con <- dbConnect(RSQLite::SQLite(), "P:\\IMD\\2018 Database Project\\asrs_tempor
 # - cashflow
 ## END PURPOSE ###################################################################
 
+## TODO: remove "Total" calculations from y.v/hv/cf ... they will be calculated by portfolio, not stored in database
+
 
 # Functions beginning with "get_" grab and manipulate data
 # Functions beginning with "mix_" combine data sources

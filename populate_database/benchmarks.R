@@ -7,7 +7,7 @@ con <- dbConnect(RSQLite::SQLite(), "P:\\IMD\\2018 Database Project\\asrs_tempor
 ### TODO: address the days365 and basis point additions
 
 spy = read_csv('data/spx index.csv')
-rty = read_csv('data/rty index.csv')
+rut = read_csv('data/rty index.csv')
 vmfx = read_csv('data/vbmfx equity.csv')
 odce = read_csv('data/odce daily index.csv')
 lli = read_csv('data/spbdal index.csv')
@@ -50,14 +50,15 @@ lookup_table = tibble(short_name = short_names,
                       long_name = long_names)
 
 benchmarks = bind_rows(spy %>% mutate(symbol = 'SPY'),
-                       rty %>% mutate(symbol = 'RTY'),
+                       rut %>% mutate(symbol = 'RUT'),
                        vmfx %>% mutate(symbol = 'VMFX'),
                        lli %>% mutate(symbol = 'LLI'),
                        cpi %>% mutate(symbol = 'CPI') %>% rename(PX_LAST = CPIxFE, date = Date),
                        odce %>% mutate(symbol = 'ODCE') %>% rename(date = X1, PX_LAST = x),
                        r2ksec %>% select(-X1) %>% rename(date = Date) %>% gather(symbol, PX_LAST, -date)) %>% 
   select(date, PX_LAST, symbol) %>%
-  rename(price = PX_LAST, shortname = symbol)
+  rename(price = PX_LAST, shortname = symbol) %>%
+  drop_na()
 
 benchmarks_df = benchmarks %>%
   left_join(lookup_table, by = c('shortname' = 'short_name')) %>%
