@@ -1,3 +1,4 @@
+library('timetk')
 library('zoo')
 library('tseries')
 library('tidyverse')
@@ -5,8 +6,9 @@ source(file='scripts/basic financial.r')
 
 library('DBI')
 library('RSQLite')
-con <- dbConnect(RSQLite::SQLite(), "P:\\IMD\\2018 Database Project\\asrs_temporary_db.db")
-#con = dbConnect(RSQLite::SQLite(), "C:\\Users\\scotts\\Documents\\GitHub\\DB_Application\\asrs_temporary.db")
+
+#con <- dbConnect(RSQLite::SQLite(), "P:\\IMD\\2018 Database Project\\asrs_temporary_db.db")
+con = dbConnect(RSQLite::SQLite(), "C:\\Users\\scotts\\Documents\\GitHub\\DB_Application\\asrs_temporary.db")
 
 ## PURPOSE ######################################################################
 # This file loads the database with data initially sourced in privmcalcs-Feb2018.R
@@ -582,9 +584,153 @@ names(y.cf)=namevec
 names(y.v)=namevec
 names(y.hv)=namevec
 
+
+
+# we are now done building the lists of cash flows and values
+
+
+# now we are going to grab index data
+# now held in a series of csv files
+# when KP wrote this code it got the data from BBG
+# need to investigate code that creates the csv files
+#
+
+#setup dates
+#add missing days to benchmark
+#fill NAs with by linear interpolation with neighboring values
+first=-5+min(x.all$Date)
+last=max(x.all$Date)
+
+days365=zooreg(rep(0,1+last-first),start=first,end=last)
+
+#add SPY to benchmark
+SPY=read.csv('data/spx index.csv')
+SPYd=as.Date(SPY[,2],format='%Y-%m-%d')
+SPY.z=zoo(SPY[,3],SPYd)
+SPY.z=na.approx(merge(days365,SPY.z)[,2],na.rm=FALSE)
+
+#add ^RUT to benchmark
+RUT=read.csv('data/rty index.csv')
+RUTd=as.Date(RUT[,2])#,format='%Y-%m-%d')
+RUT.z=zoo(RUT[,3],RUTd)
+RUT.z=na.approx(merge(days365,RUT.z)[,2],na.rm=FALSE)
+
+#add VBMFX (bonds) to benchmark
+VBMFX=read.csv('data/vbmfx equity.csv')
+VBMFXd=as.Date(VBMFX[,2])#,format='%Y-%m-%d')
+VBMFX.z=zoo(VBMFX[,3],VBMFXd)
+VBMFX.z=na.approx(merge(days365,VBMFX.z)[,2],na.rm=FALSE)
+
+#add ODCE to the benchmark
+ODCE=read.csv('data/odce daily index.csv')
+ODCE[,1]=as.Date(ODCE[,1])#,format='%m/%d/%Y')
+ODCE.z=zoo(ODCE[,2],ODCE[,1])
+ODCE.z=na.approx(merge(days365,ODCE.z)[,2],na.rm=FALSE)
+
+#add Fixed 8 to the benchmark
+fixed8=exp(cumsum(rep(log(1.08)/365,length(ODCE.z))))
+fixed8.z=zoo(fixed8,time(ODCE.z))
+#bench.lst[[i+4]]=fixed8.z
+
+####################################################
+#This Benchmark adds basis points to the index
+#add levered loans to benchmark
+lli=read.csv('data/spbdal index.csv')
+llid=as.Date(lli[,2],format='%Y-%m-%d')
+lli.z=zoo(lli[,3],llid)
+lli.z=na.approx(merge(days365,lli.z)[,2],na.rm=FALSE)
+
+#add 250 to lli benchmark
+lli.notna=which(!is.na(lli.z))
+lli.cc=as.numeric(log(lli.z[lli.notna]))
+lli.z[lli.notna]=(exp(c(0,(cumsum(diff(lli.cc)+log(1.025)/365)))))
+
+
+#################################################
+#This Benchmark adds basis points to the index
+#add cpi to list
+cpi.df=read.csv('data/CPI X Food Energy.csv')
+cpid=as.Date(cpi.df[,2],format="%Y-%m-%d")
+cpicc=log(as.numeric(cpi.df[,3]))
+
+#add 350
+cpi.350=exp(c(0,(cumsum(diff(cpicc)+log(1.035)/12))))
+cpi.z=zoo(cpi.350,cpid)
+if(time(lastinvec(cpi.z))<last) cpi.z=mergesum.z(cpi.z,zoo(as.numeric(lastinvec(cpi.z)),last))
+cpi.z=na.approx(merge(days365,cpi.z)[,2],na.rm=FALSE)
+
+
+##############################################
+# brings in matrix of R2K sector indices
+#add R2K sector indices to list
+r2ksec.df = read.csv('data/r2k sector indices.csv')
+r2ksecd=as.Date(r2ksec.df[,2],format="%Y-%m-%d")
+
+#r2k fin services
+# RGUSFS "R2K Fin Svc"
+r2kfin.z=zoo(r2ksec.df[,3],r2ksecd)
+r2kfin.z=na.approx(merge(days365,r2kfin.z)[,2],na.rm=FALSE)
+
+#r2k health care
+# RGUSHS "R2K Health Care"
+r2khc.z=zoo(r2ksec.df[,4],r2ksecd)
+r2khc.z=na.approx(merge(days365,r2khc.z)[,2],na.rm=FALSE)
+
+#r2k technology
+# RGUSTS "R2K Tech"
+r2ktech.z=zoo(r2ksec.df[,5],r2ksecd)
+r2ktech.z=na.approx(merge(days365,r2ktech.z)[,2],na.rm=FALSE)
+
+#r2k producer durables
+# RGUSPS "R2K Durables"
+r2kprod.z=zoo(r2ksec.df[,6],r2ksecd)
+r2kprod.z=na.approx(merge(days365,r2kprod.z)[,2],na.rm=FALSE)
+
+#r2k consumer disc
+# RGUSDS "R2K Consumer Disc" 
+r2kcd.z=zoo(r2ksec.df[,7],r2ksecd)
+r2kcd.z=na.approx(merge(days365,r2kcd.z)[,2],na.rm=FALSE)
+
+#r2k material
+# RGUSMS "R2K Materials"
+r2kmat.z=zoo(r2ksec.df[,8],r2ksecd)
+r2kmat.z=na.approx(merge(days365,r2kmat.z)[,2],na.rm=FALSE)
+
+#r2k utilities
+# RGUSUS "R2K Utilities"
+r2kutil.z=zoo(r2ksec.df[,9],r2ksecd)
+r2kutil.z=na.approx(merge(days365,r2kutil.z)[,2],na.rm=FALSE)
+
+#r2k energy
+# RGUSES "R2K Energy"
+r2ken.z=zoo(r2ksec.df[,10],r2ksecd)
+r2ken.z=na.approx(merge(days365,r2ken.z)[,2],na.rm=FALSE)
+
+#r2k consumer staples
+# RGUSSS  "R2K Staples"
+r2kstaple.z=zoo(r2ksec.df[,11],r2ksecd)
+r2kstaple.z=na.approx(merge(days365,r2kstaple.z)[,2],na.rm=FALSE)
+
+# put the benchmarks in to a list
+bench.lst = list(SPY.z, RUT.z, VBMFX.z, ODCE.z, fixed8.z, lli.z, cpi.z, r2kfin.z, r2khc.z, r2ktech.z, r2kprod.z, r2kcd.z, r2kmat.z, r2kutil.z, r2ken.z, r2kstaple.z)
+#add the names to the list
+names(bench.lst)=ticker.vec=c('SPY','^RUT','VBMFX','ODCE','Fixed8','LevLoan.250','CPIxFE.350','RGUSFS','RGUSHS', 'RGUSTS', 'RGUSPS', 'RGUSDS','RGUSMS', 'RGUSUS',
+                              'RGUSES', 'RGUSSS')
+benchnames=c("S&P 500","Russell 2K","Bonds",'ODCE','Fixed 8','Lev Loan+250','CPIxFE+350', 'R2K Fin Svc', 	'R2K Health Care', 'R2K Tech', 'R2K Durables',
+             'R2K Consumer Disc',	'R2K Materials',	'R2K Utilities',	'R2K Energy', 'R2K Staples')
+
+benchmarks_z = do.call('merge', bench.lst)
+benchmarks_df = tk_tbl(benchmarks_z) %>% rename(date = index)
+benchmarks_df = benchmarks_df[, colSums(is.na(benchmarks_df)) != nrow(benchmarks_df)] # remove rows containing ONLY NA
+benchmarks_df = benchmarks_df %>% 
+  mutate(date = as.character(date)) %>%
+  gather(shortname, price, -date) %>%
+  arrange(shortname,date)
+
+
 # Convert list of zoo objects to dataframes
 y.cf_z = do.call('merge', y.cf) # merge to wide format
-y.cf_df = data.frame(date = index(y.cf_z), y.cf_z)
+y.cf_df = tk_tbl(y.cf_z) %>% rename(date = index)
 y.cf_df = y.cf_df[, colSums(is.na(y.cf_df)) != nrow(y.cf_df)] # remove rows containing ONLY NA
 y.cf_df = y.cf_df %>% 
   as_tibble() %>%
@@ -593,7 +739,7 @@ y.cf_df = y.cf_df %>%
   arrange(shortname,date)
 
 y.v_z = do.call('merge', y.v) # merge to wide format
-y.v_df = data.frame(date = index(y.v_z), y.v_z)
+y.v_df = tk_tbl(y.v_z) %>% rename(date = index)
 y.v_df = y.v_df[, colSums(is.na(y.v_df)) != nrow(y.v_df)] # remove rows containing ONLY NA
 y.v_df = y.v_df %>% 
   as_tibble() %>%
@@ -602,7 +748,7 @@ y.v_df = y.v_df %>%
   arrange(shortname,date)
 
 y.hv_z = do.call('merge', y.hv) # merge to wide format
-y.hv_df = data.frame(date = index(y.hv_z), y.hv_z)
+y.hv_df = tk_tbl(y.hv_z) %>% rename(date = index)
 y.hv_df = y.hv_df[, colSums(is.na(y.hv_df)) != nrow(y.hv_df)] # remove rows containing ONLY NA
 y.hv_df = y.hv_df %>% 
   as_tibble() %>%
@@ -618,6 +764,13 @@ if(nrow(y.cf_df) - nrow(y.cf_df %>% unique()) != 0){warning('Duplication exists 
 if(nrow(y.v_df) - nrow(y.v_df %>% unique()) != 0){warning('Duplication exists in data y.v')}
 if(nrow(y.hv_df) - nrow(y.hv_df %>% unique()) != 0){warning('Duplication exists in data y.hv')}
 if(nrow(y_df) - nrow(y_df %>% unique()) != 0){warning('Duplication exists in data y_df (overlap between y.v and y.hv)')}
+
+##########################
+#TODO: BREAK loading database, must choose any duplicate value before
+#---must be investigated by hand
+#---break for both cashflows and values
+#---if the duplicate values are the same, it's okay, if different, break
+#############################
 
 ###TODO: Check these... MAKING ASSUMPTIONS ###
 y_df = y_df %>%
@@ -635,8 +788,6 @@ fundinfo_df = fundinfo_df %>%
          yield_amt = yield,
          class_type = class)
 
-
-
 # Truncate tables before inserting
 dbSendQuery(con, "DELETE FROM fundinfo;")
 dbWriteTable(con, name = 'fundinfo', value = fundinfo_df, row.names = FALSE, append = TRUE)
@@ -646,5 +797,8 @@ dbWriteTable(con, name = 'nav', value = y_df, row.names = FALSE, append = TRUE)
 
 dbSendQuery(con, "DELETE FROM cashflow;")
 dbWriteTable(con, name = 'cashflow', value = y.cf_df, row.names = FALSE, append = TRUE)
+
+dbSendQuery(con, "DELETE FROM benchmark;")
+dbWriteTable(con, name='benchmark', value = benchmarks_df, row.names=FALSE, append=TRUE)
 
 dbDisconnect(con)
