@@ -26,51 +26,32 @@ con = dbConnect(RSQLite::SQLite(), "C:\\Users\\scotts\\Documents\\GitHub\\DB_App
 #R2K Consumer Staples = RGUSSS
 #####################
 
-shortnames = c("SPX","RTY","LBUSTRUU",
-               "RGUSFS","RGUSHS", "RGUSTS", 
-               "RGUSPS", "RGUSDS","RGUSMS", 
-               "RGUSUS","RGUSES", "RGUSSS",
-               "CPUPAXFE", "ODCE")
-
-longnames = c("S&P 500 Index", "Russell 2000 Index", "Bloomberg Barclays US Agg Tota", 
-              "Russell 2000 Financial Service", "Russell 2000 Health Care Index", "Russell 2000 Technology Index",
-              "Russell 2000 Producer Durables", "Russell 2000 Consumer Discreti", "Russell 2000 Materials & Proce",
-              "Russell 2000 Utilities Index", "Russell 2000 Energy Index", "Russell 2000 Consumer Staples",
-              "US CPI Urban Consumers Less Fo", "ODCE")
-
-lookup_table = tibble(shortname = shortnames, 
-                      longname = longnames)
-
+lookup_table = read_csv('ticker_symbols.csv')
 
 start <- as.Date("2004-01-01")
 end <- today()
-tickers <- paste(c("SPX","RTY","LBUSTRUU","RGUSFS","RGUSHS", "RGUSTS", "RGUSPS", "RGUSDS","RGUSMS", "RGUSUS",
+tickers <- paste(c("SPX","RTY","LBUSTRUU","SPBDAL","RGUSFS","RGUSHS", "RGUSTS", "RGUSPS", "RGUSDS","RGUSMS", "RGUSUS",
                    "RGUSES", "RGUSSS")," INDEX")
-fields <- c("TOT_RETURN_INDEX_GROSS_DVDS","SECURITY_NAME", "PX_LAST")
+fields <- c("TOT_RETURN_INDEX_GROSS_DVDS","NAME", "PX_LAST")
 conn <- blpConnect()
+
+
 bbgdat.daily <- bdh(tickers,fields[1],start.date = start, end.date = end, options = 
                       c("periodicitySelection" = "DAILY"))
-bbg.name = bdp(tickers, fields[2])
-data.list <- list()
-for(t in tickers) {
-  dat <- bbgdat.daily[[t]]
-  colnames(dat) = c("Date", "Price")
-  px.xts <- xts(dat$Price, dat$Date)
-  n <- bbg.name[t, fields[2]]
-  colnames(px.xts) <- n
-  data.list[[n]] <- px.xts
-}  
+tickers_df = bbgdat.daily %>% 
+  map(bind_rows) %>%
+  bind_rows(.id = 'symbol') %>%
+  rename(price = TOT_RETURN_INDEX_GROSS_DVDS)
 
-#get cpi data and add to list above
 bbgdat.daily <- bdh("CPUPAXFE Index", fields[3], start.date = start, end.date = end, options = 
                       c("periodicitySelection" = "DAILY"))
-bbg.name = bdp("CPUPAXFE Index", "NAME")
-x=blpDisconnect(conn)
-colnames(bbgdat.daily) <- c("Date", "Price")
-data.list[[bbg.name[1,1]]] <- xts(bbgdat.daily$Price, bbgdat.daily$Date)
+tickers_df = tickers_df %>%
+  bind_rows(data.frame(bbgdat.daily) %>% 
+              rename(price = PX_LAST) %>%
+              mutate(symbol = "CPUPAXFE Index"))
 
 
-# Calculate ODCE daily index & add to list above
+# Calculate ODCE daily index 
 odceq = read.csv('data/ODCE.csv')
 odceq.mat = as.matrix(odceq)
 odceq.vec = as.vector(t(odceq.mat[,2:5]))
@@ -89,34 +70,20 @@ last = odceq.dates[length(odceq.dates)]
 days365 = zooreg(rep(0,1+last-first),start=first,end=last)
 odce.daily = merge(days365,odceq.index)
 odce.daily = na.approx(odce.daily[,2])
-data.list[["ODCE"]] <- xts(coredata(odce.daily), index(odce.daily))
 
-df_z = do.call('merge', data.list) # merge to wide format
-names(df_z) = names(data.list)
-df = tk_tbl(df_z) %>% rename(date = index)
-df = df[, colSums(is.na(df)) != nrow(df)] # remove rows containing ONLY NA
-df = df %>% 
-  as_tibble() %>%
-  mutate(date = as.character(date)) %>%
-  gather(longname, price, -date) %>%
-  arrange(longname,date) %>%
-  drop_na()
+odce_df = tibble(date = index(odce.daily), odce.daily) %>%
+  rename(price = odce.daily) %>%
+  mutate(symbol = 'ODCE',
+         price = as.numeric(price))
 
-df_final = df %>%
-  left_join(lookup_table, by = 'longname')
+
+df = tickers_df %>% as_tibble() %>%
+  bind_rows(odce_df) %>%
+  left_join(lookup_table, by = c('symbol' = 'reference_name')) %>%
+  select(date, price, shortname, longname, symbol) %>%
+  mutate(date = as.character(date))
 
 dbSendQuery(con, "DELETE FROM benchmark;")
-dbWriteTable(con, name='benchmark', value = df_final, row.names=FALSE, append=TRUE)
+dbWriteTable(con, name='benchmark', value = df, row.names=FALSE, append=TRUE)
 dbDisconnect(con)
-#
-
-
-
-
-
-
-
-
-
-
 
