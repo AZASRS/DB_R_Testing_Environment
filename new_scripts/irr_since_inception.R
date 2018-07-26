@@ -21,7 +21,7 @@ irr_since_inception = function(shortname, benchname, portname){
   valdate = AZASRS::get_valdate()
   pev = AZASRS::get_filtered_nav(shortname, convert_365 = FALSE, return_zoo = TRUE)
   indx = AZASRS::get_filtered_benchmark(benchname, convert_365 = TRUE)
-  pecf = AZASRS::get_filtered_cashflow(shortname, convert_365 = TRUE) %>% na.trim()
+  pecf = AZASRS::get_filtered_cashflow(shortname, convert_365 = FALSE, return_zoo = TRUE) %>% na.trim()
   
   pev.more=more.values[which(more.values$Portfolio==portname),]
   pev.more=pev.more[which(!(pev.more$Date%in%time(pev))),]
